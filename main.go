@@ -4,6 +4,7 @@ import (
 	// "html/template"
 	"database/sql"
 	"fmt"
+	"html/template"
 	"math"
 	"net/http"
 
@@ -12,8 +13,8 @@ import (
 	wkb "github.com/twpayne/go-geom/encoding/wkb"
 )
 
-type Template interface {
-	Execute(w http.ResponseWriter, data interface{})
+type Template struct {
+	HTMLTpl *template.Template
 }
 
 type Country struct {
@@ -21,9 +22,16 @@ type Country struct {
 	Geo  wkb.Geom
 }
 
-func StaticHandler(w http.ResponseWriter, r *http.Request) {
+func StaticHandler(w http.ResponseWriter, file string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, "my restAPI")
+	tpl, err := template.ParseFiles(file)
+	if err != nil {
+		fmt.Printf("error parsing")
+	}
+	err = tpl.Execute(w, nil)
+	if err != nil {
+		fmt.Printf("error executing")
+	}
 }
 
 func round(num float64) int {
@@ -35,9 +43,8 @@ func toFixed(num float64, precision int) float64 {
 	return float64(round(num*output)) / output
 }
 
-func findn(cnt []float64) []string {
+func findn(refname string, cnt []float64) []string {
 	var ans []string
-	//sort.Float64s(cnt)
 	db, err := sql.Open("pgx", "host=localhost port=5432 user=pixxeldb password=pixxeldb dbname=spatialdata sslmode=disable")
 	if err != nil {
 		fmt.Printf("error connecting to db")
@@ -64,7 +71,6 @@ func findn(cnt []float64) []string {
 		for _, e := range cntry.Geo.FlatCoords() {
 			cntBoundary = append(cntBoundary, toFixed(e, 1))
 		}
-		//sort.Float64s(cntBoundary)
 		a := len(cntBoundary)
 		b := len(cnt)
 		if a > b {
@@ -78,9 +84,11 @@ func findn(cnt []float64) []string {
 					break
 				}
 			}
-
+			if neigh {
+				break
+			}
 		}
-		if neigh {
+		if neigh && cntry.Name != refname {
 			ans = append(ans, cntry.Name)
 		}
 	}
@@ -88,8 +96,15 @@ func findn(cnt []float64) []string {
 
 }
 
-func main() {
-	rt := chi.NewRouter()
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	StaticHandler(w, "home.gohtml")
+}
+
+func neighbourHandler(w http.ResponseWriter, r *http.Request) {
+	StaticHandler(w, "neighbour.gohtml")
+}
+
+func neighbourUtil(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("pgx", "host=localhost port=5432 user=pixxeldb password=pixxeldb dbname=spatialdata sslmode=disable")
 	if err != nil {
 		fmt.Printf("error connecting to db")
@@ -99,8 +114,7 @@ func main() {
 		fmt.Printf("error communicating with db")
 	}
 	defer db.Close()
-	//ST_AsBinary
-	res, err := db.Query("select admin,ST_AsBinary(wkb_geometry) from spatialdatadb where admin='India'")
+	res, err := db.Query("select admin,ST_AsBinary(wkb_geometry) from spatialdatadb where admin=$1", r.FormValue("country"))
 
 	if err != nil {
 		fmt.Println("error running query")
@@ -117,12 +131,53 @@ func main() {
 	for _, e := range cntry.Geo.FlatCoords() {
 		cntBoundary = append(cntBoundary, toFixed(e, 1))
 	}
+	neighbours := findn(cntry.Name, cntBoundary)
+	fmt.Fprint(w, neighbours)
+}
 
-	var neighbours []string
-	neighbours = findn(cntBoundary)
-	fmt.Printf("Neighbours: %v", neighbours)
+func searchHandler(w http.ResponseWriter, r *http.Request) {
+	StaticHandler(w, "search.gohtml")
+}
 
-	rt.Get("/", StaticHandler)
+func searchUtil(w http.ResponseWriter, r *http.Request) {
+	var result []string
+	db, err := sql.Open("pgx", "host=localhost port=5432 user=pixxeldb password=pixxeldb dbname=spatialdata sslmode=disable")
+	if err != nil {
+		fmt.Printf("error connecting to db")
+	}
+	err = db.Ping()
+	if err != nil {
+		fmt.Printf("error communicating with db")
+	}
+	defer db.Close()
+	per := '%'
+	res, err := db.Query("select admin from spatialdatadb where admin like $1 ", string(per)+r.FormValue("country")+string(per))
+
+	if err != nil {
+		fmt.Println("error running query")
+	}
+	defer res.Close()
+	var temp string
+	for res.Next() {
+		err = res.Scan(&temp)
+		if err != nil {
+			fmt.Println("error retrieving data from row")
+		}
+		result = append(result, temp)
+	}
+	fmt.Fprint(w, result)
+}
+
+func main() {
+	rt := chi.NewRouter()
+
+	//tpl, err := template.ParseFiles("home.gohtml")
+	rt.Get("/", homeHandler)
+	//tpl, err = template.ParseFiles("search.gohtml")
+	rt.Get("/searchcountry", searchHandler)
+	rt.Get("/findneighbour", neighbourHandler)
+	rt.Post("/search", searchUtil)
+	rt.Post("/showneighbour", neighbourUtil)
 	rt.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "page not found")
 	})
