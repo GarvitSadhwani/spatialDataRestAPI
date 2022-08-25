@@ -72,9 +72,6 @@ func findn(refname string, cnt []float64) []string {
 		}
 		a := len(cntBoundary)
 		b := len(cnt)
-		if a > b {
-			a = b
-		}
 		neigh := false
 		for i := 0; i < a-1; i += 2 {
 			for j := 0; j < b-1; j += 2 {
@@ -88,7 +85,7 @@ func findn(refname string, cnt []float64) []string {
 			}
 		}
 		if neigh && cntry.Name != refname {
-			ans = append(ans, cntry.Name)
+			ans = append(ans, cntry.Name+string(','))
 		}
 	}
 	return ans
@@ -155,7 +152,7 @@ func searchUtil(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 	per := '%'
-	res, err := db.Query("select admin from spatialdatadb where admin like $1 ", string(per)+r.FormValue("country")+string(per))
+	res, err := db.Query("select admin from spatialdatadb where admin like $1 ", r.FormValue("country")+string(per))
 
 	if err != nil {
 		fmt.Println("error running query")
@@ -167,7 +164,7 @@ func searchUtil(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println("error retrieving data from row")
 		}
-		result = append(result, temp)
+		result = append(result, temp+string(','))
 	}
 	fmt.Fprint(w, "You might be looking for: <br><br>")
 	fmt.Fprint(w, result)
@@ -223,7 +220,6 @@ func deleteCountryUtil(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	rt := chi.NewRouter()
-
 	rt.Get("/", homeHandler)
 	rt.Get("/searchcountry", searchHandler)
 	rt.Get("/findneighbour", neighbourHandler)
