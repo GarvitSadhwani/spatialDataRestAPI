@@ -5,11 +5,11 @@ Data for countries taken from [datahub](https://datahub.io/core/geo-countries#re
 
 ## Features
 - Search for a country
-    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/searchcountry.JPG)
-    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/showncountry.JPG)
+    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/templates/searchcountry.JPG)
+    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/templates/showcountry.JPG)
 - Find neighbours for a country on the data list
-    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/searchnghbr.JPG)
-    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/shownghbr.JPG)
+    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/templates/searchnghbr.JPG)
+    ![homepage](https://raw.githubusercontent.com/GarvitSadhwani/spatialDataRestAPI/main/templates/shownghbr.JPG)
 - Add or Delete any country
 - More features coming soon!
 

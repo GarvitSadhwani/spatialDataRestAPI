@@ -93,11 +93,11 @@ func findn(refname string, cnt []float64) []string {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	StaticHandler(w, "home.gohtml")
+	StaticHandler(w, "templates/home.gohtml")
 }
 
 func neighbourHandler(w http.ResponseWriter, r *http.Request) {
-	StaticHandler(w, "neighbour.gohtml")
+	StaticHandler(w, "templates/neighbour.gohtml")
 }
 
 func neighbourUtil(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +136,7 @@ func neighbourUtil(w http.ResponseWriter, r *http.Request) {
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
-	StaticHandler(w, "search.gohtml")
+	StaticHandler(w, "templates/search.gohtml")
 }
 
 func searchUtil(w http.ResponseWriter, r *http.Request) {
@@ -172,7 +172,7 @@ func searchUtil(w http.ResponseWriter, r *http.Request) {
 }
 
 func addCountryHandler(w http.ResponseWriter, r *http.Request) {
-	StaticHandler(w, "newcountry.gohtml")
+	StaticHandler(w, "templates/newcountry.gohtml")
 }
 
 func newCountryUtil(w http.ResponseWriter, r *http.Request) {
@@ -196,7 +196,7 @@ func newCountryUtil(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteCountryHandler(w http.ResponseWriter, r *http.Request) {
-	StaticHandler(w, "removecountry.gohtml")
+	StaticHandler(w, "templates/removecountry.gohtml")
 }
 
 func deleteCountryUtil(w http.ResponseWriter, r *http.Request) {
