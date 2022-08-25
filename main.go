@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "html/template"
 	"database/sql"
 	"fmt"
 	"html/template"
@@ -105,6 +104,7 @@ func neighbourHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func neighbourUtil(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	db, err := sql.Open("pgx", "host=localhost port=5432 user=pixxeldb password=pixxeldb dbname=spatialdata sslmode=disable")
 	if err != nil {
 		fmt.Printf("error connecting to db")
@@ -132,7 +132,10 @@ func neighbourUtil(w http.ResponseWriter, r *http.Request) {
 		cntBoundary = append(cntBoundary, toFixed(e, 1))
 	}
 	neighbours := findn(cntry.Name, cntBoundary)
+	result := "The countries intersecting with " + r.FormValue("country") + " are:<br><br>"
+	fmt.Fprint(w, result)
 	fmt.Fprint(w, neighbours)
+	fmt.Fprint(w, "<br><br><a href=\"/\">home</a>")
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -140,6 +143,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func searchUtil(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var result []string
 	db, err := sql.Open("pgx", "host=localhost port=5432 user=pixxeldb password=pixxeldb dbname=spatialdata sslmode=disable")
 	if err != nil {
@@ -165,19 +169,70 @@ func searchUtil(w http.ResponseWriter, r *http.Request) {
 		}
 		result = append(result, temp)
 	}
+	fmt.Fprint(w, "You might be looking for: <br><br>")
 	fmt.Fprint(w, result)
+	fmt.Fprint(w, "<br><br><a href=\"/\">home</a>")
+}
+
+func addCountryHandler(w http.ResponseWriter, r *http.Request) {
+	StaticHandler(w, "newcountry.gohtml")
+}
+
+func newCountryUtil(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	db, err := sql.Open("pgx", "host=localhost port=5432 user=pixxeldb password=pixxeldb dbname=spatialdata sslmode=disable")
+	if err != nil {
+		fmt.Printf("error connecting to db")
+	}
+	err = db.Ping()
+	if err != nil {
+		fmt.Printf("error communicating with db")
+	}
+	defer db.Close()
+	qry := "insert into spatialdatadb (admin,iso_a3,wkb_geometry) values ('" + r.FormValue("name") + "','" + r.FormValue("abbr") + "',ST_AsBinary(ST_GeomFromText('POLYGON((" + r.FormValue("coord") + "))',4326)));"
+	_, err = db.Exec(qry)
+	if err != nil {
+		fmt.Println("error running query")
+	}
+
+	fmt.Fprint(w, "Country added<br><br><a href=\"/\">home</a>")
+}
+
+func deleteCountryHandler(w http.ResponseWriter, r *http.Request) {
+	StaticHandler(w, "removecountry.gohtml")
+}
+
+func deleteCountryUtil(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	db, err := sql.Open("pgx", "host=localhost port=5432 user=pixxeldb password=pixxeldb dbname=spatialdata sslmode=disable")
+	if err != nil {
+		fmt.Printf("error connecting to db")
+	}
+	err = db.Ping()
+	if err != nil {
+		fmt.Printf("error communicating with db")
+	}
+	defer db.Close()
+	_, err = db.Exec("delete from spatialdatadb where admin=$1", r.FormValue("name"))
+	if err != nil {
+		fmt.Println("error running query")
+	}
+
+	fmt.Fprint(w, "Country deleted<br><br><a href=\"/\">home</a>")
 }
 
 func main() {
 	rt := chi.NewRouter()
 
-	//tpl, err := template.ParseFiles("home.gohtml")
 	rt.Get("/", homeHandler)
-	//tpl, err = template.ParseFiles("search.gohtml")
 	rt.Get("/searchcountry", searchHandler)
 	rt.Get("/findneighbour", neighbourHandler)
 	rt.Post("/search", searchUtil)
 	rt.Post("/showneighbour", neighbourUtil)
+	rt.Get("/addcountry", addCountryHandler)
+	rt.Post("/newcountry", newCountryUtil)
+	rt.Get("/deletecountry", deleteCountryHandler)
+	rt.Post("/erasecountry", deleteCountryUtil)
 	rt.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "page not found")
 	})
