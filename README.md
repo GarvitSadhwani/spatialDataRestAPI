@@ -1,4 +1,4 @@
-# RestAPI for Spatial Data
+# RestAPI implementation for Spatial Data
 A web API developed using golang to find neighbours for a country or search for a country name.
 Data for countries taken from [datahub](https://datahub.io/core/geo-countries#resource-geo-countries_zip)
 
