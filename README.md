@@ -3,26 +3,26 @@ A web API developed using golang to find neighbours for a country or search for 
 Data for countries taken from [datahub](https://datahub.io/core/geo-countries#resource-geo-countries_zip)
 
 ## Installation and Execution
--Clone the repository in the desired directory
-    ```
+- Clone the repository in the desired directory
+    ```sh
     >git clone https://github.com/GarvitSadhwani/spatialDataRestAPI
     ```    
--Install [gdal](https://gdal.org/download.html) if not present
--Credentials to the postGIS database are present in ```docker-compose.yml``` file
--Start Docker
-    ```
+- Install [gdal](https://gdal.org/download.html) if not present
+- Credentials to the postGIS database are present in ```docker-compose.yml``` file
+- Start Docker
+    ```sh
     >docker compose up
     ```
--Run the following command to import countries.geojason data to the PostGIS database
-    ```
+- Run the following command to import countries.geojason data to the PostGIS database
+    ```sh
     >ogr2ogr -f "PostgreSQL" PG:"dbname=spatialdata user=pixxeldb password=pixxeldb" "countries.geojson" -nln spatialdatadb -append
     ```
  This creates a table 'spatialdatadb' in the PostGIS database which is used by the code
--Execute the ```main.go``` file
-    ```
+- Execute the ```main.go``` file
+    ```sh
     >go run main.go
     ```
--The API will be hosted on localhost:8080
+- The API will be hosted on localhost:8080
 
 
 ## Features
