@@ -2,7 +2,7 @@
 A web API developed using golang to find neighbours for a country or search for a country name.
 Data for countries taken from [datahub](https://datahub.io/core/geo-countries#resource-geo-countries_zip)
 
-## Installation and Execution
+## Setup and Execution
 - Clone the repository in the desired directory
     ```sh
     > git clone https://github.com/GarvitSadhwani/spatialDataRestAPI
