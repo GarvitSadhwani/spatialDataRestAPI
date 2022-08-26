@@ -8,7 +8,7 @@ Data for countries taken from [datahub](https://datahub.io/core/geo-countries#re
     > git clone https://github.com/GarvitSadhwani/spatialDataRestAPI
     ```    
 - Install [gdal](https://gdal.org/download.html) if not present
-- Credentials to the postGIS database are present in ```docker-compose.yml``` file
+- Credentials to the PostGIS database are present in ```docker-compose.yml``` file
 - Start Docker
     ```sh
     > docker compose up
